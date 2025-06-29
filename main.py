@@ -2,6 +2,15 @@
 
 from package import Package
 from hashtable import HashTable
+from openpyxl import load_workbook
+from pathlib import Path
+from enum import Enum
+
+class DeliveryStatus(Enum):
+    NOT_STARTED = "Not Started"
+    IN_TRANSIT = "In Transit"
+    DELIVERED = "Delivered"
+    DELAYED = "Delayed"
 
 def lookup_package(package_id, package_table):
     """
@@ -15,6 +24,7 @@ def lookup_package(package_id, package_table):
         return package_table[package_id].lookupPackage()
     else:
         return None
+
 
 
 def main():
@@ -63,18 +73,48 @@ def main():
                         dequeue the next truck and repeat the process
     '''
 
-    # Example package data structure
-    package_table = {
-        1: Package(id=1, address="123 Main St", deadline="10:30 AM", city="Salt Lake City", zip=84101, weight=5, deliveryStatus="at the hub"),
-        2: Package(id=2, address="456 Elm St", deadline="12:00 PM", city="Salt Lake City", zip=84102, weight=10, deliveryStatus="en route"),
-        # Add more packages as needed
-    }
+    parent_dir = Path(__file__).resolve().parent.parent
 
-    # Example usage of lookup_package function
-    package_id = 1
-    package_info = lookup_package(package_id, package_table)
+    wgu_packages_file = load_workbook(f'{parent_dir}/WGUPS Package File.xlsx')
+    package_distances_file = load_workbook(f'{parent_dir}/WGUPS Distance Table.xlsx')
+
+    delivery_array = [row for row in wgu_packages_file.active.iter_rows(min_row=8, max_row=48, min_col=1, max_col=8, values_only=True)]
+    distance_array = [row for row in package_distances_file.active.iter_rows(min_row=8, max_row=35, min_col=1, max_col=29, values_only=True)]
+
+    deliveriesTable = HashTable()
+    packageTable = HashTable()
+
+    for i in range(1, len(delivery_array)):
+        row = delivery_array[i]
+        package_id = row[0]
+        address = str(row[1])
+        deadline = row[5]
+        city = row[2]
+        zip_code = row[4]
+        weight = row[6]
+        deadline = row[5]
+        notes = row[6]
+        delivery_status = DeliveryStatus.NOT_STARTED.value
+
+        package = Package(package_id, address, deadline, city, zip_code, weight, delivery_status)
+
+        if not deliveriesTable.exists(address):
+            deliveriesTable.insert(address, [package])
+        else:
+            existing_packages = deliveriesTable.get(address)
+            existing_packages.append(package)
+            deliveriesTable.insert(address, existing_packages)
+
+    for i in range(1, len(distance_array)):
+        pass
     
-    if package_info:
-        print(f"Package {package_id} found: {package_info}")
-    else:
-        print(f"Package {package_id} not found.")
+if __name__ == "__main__":
+    main()
+    # Example usage of lookup_package
+    # package_table = HashTable()
+    # package_table.insert(1, Package(1, "123 Main St", "10:30 AM", "Salt Lake City", "84101", 5, "Delivered"))
+    # package = lookup_package(1, package_table)
+    # if package:
+    #     print(f"Package found: {package}")
+    # else:
+    #     print("Package not found.")

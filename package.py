@@ -33,3 +33,8 @@ class Package:
     
     def loadTruckID(self, truckID):
         self.truckID = truckID
+
+
+
+if __name__ == "__main__":
+    pass

@@ -31,10 +31,22 @@ class HashTable:
                 return True
         return False
     
-    @get('key')
+
     def exists(self, key):
         index = self._hash(key)
         for k, v in self.table[index]:
             if k == key:
                 return True
         return False
+    
+
+if __name__ == "__main__":
+    # Example usage
+    ht = HashTable()
+    ht.insert("key1", "value1")
+    ht.insert("key2", "value2")
+    print(ht.get("key1"))  # Output: value1
+    print(ht.exists("key2"))  # Output: True
+    ht.remove("key1")
+    print(ht.get("key1"))  # Output: None
+    print(ht.exists("key1"))  # Output: False
