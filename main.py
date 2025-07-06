@@ -2,9 +2,10 @@
 
 from package import Package
 from hashtable import HashTable
-from openpyxl import load_workbook
+import csv
 from pathlib import Path
 from enum import Enum
+import os
 
 class DeliveryStatus(Enum):
     NOT_STARTED = "Not Started"
@@ -75,15 +76,66 @@ def main():
 
     parent_dir = Path(__file__).resolve().parent.parent
 
-    wgu_packages_file = load_workbook(f'{parent_dir}/WGUPS Package File.xlsx')
-    package_distances_file = load_workbook(f'{parent_dir}/WGUPS Distance Table.xlsx')
+    with open(f'{os.getcwd()}/WGUPS Package File.csv', newline='') as csvFile:
+        csvReader = csv.reader(csvFile, delimiter=',')
+        packageArray = [row for row in csvReader]
 
-    delivery_array = [row for row in wgu_packages_file.active.iter_rows(min_row=8, max_row=48, min_col=1, max_col=8, values_only=True)]
-    distance_array = [row for row in package_distances_file.active.iter_rows(min_row=8, max_row=35, min_col=1, max_col=29, values_only=True)]
+    with open(f'{os.getcwd()}/WGUPS Distance Table.csv', newline='') as csvFile:
+        csvReader = csv.reader(csvFile, delimiter=',')
+        distance_array = [row for row in csvReader]
 
-    deliveriesTable = HashTable()
+    #wgu_packages_file = load_workbook(f'{parent_dir}/WGUPS Package File.xlsx')
+    #package_distances_file = load_workbook(f'{parent_dir}/WGUPS Distance Table.xlsx')
+
+    #delivery_array = [row for row in wgu_packages_file.active.iter_rows(min_row=8, max_row=48, min_col=1, max_col=8, values_only=True)]
+    #distance_array = [row for row in package_distances_file.active.iter_rows(min_row=8, max_row=35, min_col=1, max_col=29, values_only=True)]
+
     packageTable = HashTable()
 
+    print(packageArray)
+
+    for i in range(len(packageArray)):
+        row = packageArray[i]
+        package_id = int(row[0])
+        address = str(row[1])
+        deadline = row[5]
+        city = row[2]
+        zip_code = row[4]
+        weight = float(row[6])
+        delivery_status = DeliveryStatus.NOT_STARTED.value
+        notes = row[7] if len(row) > 7 else None
+
+        package = Package(package_id, address, deadline, city, zip_code, weight, delivery_status, notes)
+
+        if not packageTable.exists(package_id):
+            packageTable.insert(package_id, package)
+        else:
+            existing_package = packageTable.get(package_id)
+            existing_package.duplicateAddress = True
+            existing_package.duplicateAddressPointer += 1
+            packageTable.insert(package_id, existing_package)
+    
+
+def getNearestNeighbor(currentNode, distance_array):
+    '''
+    Function to find the nearest neighbor for a given node based on the distance array.
+    :param currentNode: The current node for which to find the nearest neighbor.
+    :param distance_array: The array containing distances between nodes.
+    :return: The ID of the nearest neighbor and its distance.
+    '''
+    min_distance = float('inf')
+    nearest_neighbor_id = -1
+
+    for row in distance_array:
+        if row[0] == currentNode:
+            for i in range(1, len(row)):
+                if row[i] < min_distance:
+                    min_distance = row[i]
+                    nearest_neighbor_id = i
+
+    return nearest_neighbor_id, min_distance
+
+'''
     for i in range(1, len(delivery_array)):
         row = delivery_array[i]
         package_id = row[0]
@@ -107,7 +159,8 @@ def main():
 
     for i in range(1, len(distance_array)):
         pass
-    
+'''
+
 if __name__ == "__main__":
     main()
     # Example usage of lookup_package
