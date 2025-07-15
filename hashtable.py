@@ -34,7 +34,7 @@ class HashTable:
 
     def exists(self, key):
         index = self._hash(key)
-        for k, v in self.table[index]:
+        for k in self.table[index]:
             if k == key:
                 return True
         return False

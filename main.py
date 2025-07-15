@@ -25,8 +25,29 @@ def lookup_package(package_id, package_table):
         return package_table[package_id].lookupPackage()
     else:
         return None
+    
 
+def read_csv(file_path):
+    """
+    Function to read distance matrix from csv and return a 2D array.
+    :param file_path: The path to the CSV file.
+    :return: A list of lists containing the data from the CSV file.
+    """
+    with open(file_path, newline='') as csvFile:
+        csvReader = csv.reader(csvFile, delimiter=',')
+        return [row for row in csvReader]
+    
 
+def index_addresses(distance_array):
+    """
+    Function to index addresses in a list and return a dictionary with address as key and index as value.
+    :param addresses: A list of addresses.
+    :return: A dictionary with addresses as keys and their indices as values.
+    """
+    address_index = HashTable(size=len(distance_array))
+    for idx, address in enumerate(distance_array):
+        address_index.insert(address[0], idx + 1)
+    return address_index
 
 def main():
     '''
@@ -74,15 +95,10 @@ def main():
                         dequeue the next truck and repeat the process
     '''
 
-    parent_dir = Path(__file__).resolve().parent.parent
+    packageArray = read_csv(f'{os.getcwd()}/WGUPS Package File.csv')
+    distanceArray = read_csv(f'{os.getcwd()}/WGUPS Distance Table.csv')
 
-    with open(f'{os.getcwd()}/WGUPS Package File.csv', newline='') as csvFile:
-        csvReader = csv.reader(csvFile, delimiter=',')
-        packageArray = [row for row in csvReader]
-
-    with open(f'{os.getcwd()}/WGUPS Distance Table.csv', newline='') as csvFile:
-        csvReader = csv.reader(csvFile, delimiter=',')
-        distance_array = [row for row in csvReader]
+    addressIndex = index_addresses(distanceArray)
 
     #wgu_packages_file = load_workbook(f'{parent_dir}/WGUPS Package File.xlsx')
     #package_distances_file = load_workbook(f'{parent_dir}/WGUPS Distance Table.xlsx')
@@ -90,31 +106,85 @@ def main():
     #delivery_array = [row for row in wgu_packages_file.active.iter_rows(min_row=8, max_row=48, min_col=1, max_col=8, values_only=True)]
     #distance_array = [row for row in package_distances_file.active.iter_rows(min_row=8, max_row=35, min_col=1, max_col=29, values_only=True)]
 
-    packageTable = HashTable()
+    packageTable = create_packages(packageArray, addressIndex)
 
-    print(packageArray)
+    firstTruck_packages = [1, 15, 13, 14, 15, 16, 19, 20, 29, 30, 31, 34, 37, 40]
+    firstTruck = load_first_truck(packageTable, firstTruck_packages)
 
-    for i in range(len(packageArray)):
-        row = packageArray[i]
-        package_id = int(row[0])
-        address = str(row[1])
-        deadline = row[5]
-        city = row[2]
-        zip_code = row[4]
-        weight = float(row[6])
-        delivery_status = DeliveryStatus.NOT_STARTED.value
-        notes = row[7] if len(row) > 7 else None
+    secondTruck_packages = [2, 3, 4, 5, 10, 18, 36, 38]
+    thirdTruck_packages = [6, 7, 8, 25, 28, 32, 9]
 
-        package = Package(package_id, address, deadline, city, zip_code, weight, delivery_status, notes)
+    secondTruck, thirdTruck = sort_remaining_packages(packageTable, secondTruck_packages, thirdTruck_packages)
 
-        if not packageTable.exists(package_id):
-            packageTable.insert(package_id, package)
-        else:
-            existing_package = packageTable.get(package_id)
-            existing_package.duplicateAddress = True
-            existing_package.duplicateAddressPointer += 1
-            packageTable.insert(package_id, existing_package)
+
+
+def deliver_packages(delivery_Truck):
+    # Implementation of the delivery logic goes here
     
+    for package in delivery_Truck:
+        # Simulate the delivery process for each package
+        # For each package on truck: (start at index 0)
+            # Set delivery status to "In Transit"
+            # Calculate distance from hub to package address * 18 for time delta 
+            # Update delivery status to "Delivered"
+            # Update the package in the hash table with the new delivery status and time
+            # Find nearest neighbor for the next package
+        # Continue until all packages are delivered
+        pass
+    
+def create_packages(package_array, address_Index):
+    '''
+    Function to create package objects from the package array and store them in a hash table.
+    :param package_array: The array of packages to be processed.
+    :return: A hash table containing package objects indexed by their IDs.
+    '''
+    package_table = HashTable(size=len(package_array))
+    
+    for i in range(len(package_array)):
+        package = Package(
+            id=int(package_array[i][0]),
+            address=package_array[i][1],
+            deadline=package_array[i][5],
+            city=package_array[i][2],
+            zip=int(package_array[i][3]),
+            weight=float(package_array[i][6]),
+            deliveryStatus=DeliveryStatus.NOT_STARTED.value,
+            notes=package_array[i][7] if len(package_array[i][7]) > 0 else None,
+            addressIdx=address_Index.get(package_array[i][1])  # Get index from addressIndex
+        )
+        package_table.insert(package.id, package)
+    
+    return package_table
+
+def load_first_truck(package_map, firstTruck):
+    first_truck = []
+    for idx in firstTruck:
+        package = package_map.get(idx)
+        package.loadTruckID(1)  # Load truck ID for the package
+        first_truck.append(package_map.get(idx))
+
+    return first_truck
+
+def sort_remaining_packages(package_map, secondTruck, thirdTruck):
+    '''
+    Function to sort remaining packages into trucks based on the nearest neighbor algorithm.
+    :param package_Array: The array of packages to be sorted.
+    :param secondTruck: The second truck object to load packages into.
+    :param thirdTruck: The third truck object to load packages into.
+    :return: None
+    '''
+    second_truck, third_truck = []
+
+    for package in package_map:
+        if package.notes is None and package.deadline is None:
+            if len(secondTruck.package_dict) < len(thirdTruck):
+                package.loadTruckID(2)
+                secondTruck.append(package) 
+            else:
+                package.loadTruckID(3)
+                thirdTruck.append(package)
+
+    return second_truck, third_truck
 
 def getNearestNeighbor(currentNode, distance_array):
     '''
@@ -123,43 +193,33 @@ def getNearestNeighbor(currentNode, distance_array):
     :param distance_array: The array containing distances between nodes.
     :return: The ID of the nearest neighbor and its distance.
     '''
-    min_distance = float('inf')
-    nearest_neighbor_id = -1
+    nearest_neighbor_id = None
+    nearest_distance = float('inf')
+    pivot = 0
+    x = currentNode
 
-    for row in distance_array:
-        if row[0] == currentNode:
-            for i in range(1, len(row)):
-                if row[i] < min_distance:
-                    min_distance = row[i]
-                    nearest_neighbor_id = i
+    for i in range(1, len(distance_array[currentNode])-1):
+        if distance_array[x][i] != '0.0' and pivot == 0:
+            distance = float(distance_array[x][i])
+            if distance < nearest_distance:
+                nearest_distance = distance
+                nearest_neighbor_id = i - 1
+        elif distance_array[x][i] == '0.0' and pivot == 0:
+            pivot = i
+            x += 1
+            distance = float(distance_array[x][pivot])
+            if distance < nearest_distance:
+                nearest_distance = distance
+                nearest_neighbor_id = i - 1
+        elif distance_array[x][i] != '0.0' and pivot != 0:
+            x += 1
+            distance = float(distance_array[x][pivot])
+            if distance < nearest_distance:
+                nearest_distance = distance
+                nearest_neighbor_id = i
 
-    return nearest_neighbor_id, min_distance
 
-'''
-    for i in range(1, len(delivery_array)):
-        row = delivery_array[i]
-        package_id = row[0]
-        address = str(row[1])
-        deadline = row[5]
-        city = row[2]
-        zip_code = row[4]
-        weight = row[6]
-        deadline = row[5]
-        notes = row[6]
-        delivery_status = DeliveryStatus.NOT_STARTED.value
-
-        package = Package(package_id, address, deadline, city, zip_code, weight, delivery_status)
-
-        if not deliveriesTable.exists(address):
-            deliveriesTable.insert(address, [package])
-        else:
-            existing_packages = deliveriesTable.get(address)
-            existing_packages.append(package)
-            deliveriesTable.insert(address, existing_packages)
-
-    for i in range(1, len(distance_array)):
-        pass
-'''
+    return nearest_neighbor_id, nearest_distance
 
 if __name__ == "__main__":
     main()
