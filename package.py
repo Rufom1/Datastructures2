@@ -1,7 +1,7 @@
 
 
 class Package:
-    def __init__(self,id=-1, address="", deadline=None, city="", zip=0, weight=0, deliveryStatus="", notes=None):
+    def __init__(self,id=-1, address="", deadline=None, city="", zip=0, weight=0, deliveryStatus="", notes=None, addressIdx=None):
         self.id = id
         self.address = address
         self.deadline = deadline
@@ -16,6 +16,7 @@ class Package:
         self.duplicateAddress = False
         self.duplicateAddressPointer = 0
         self.notes = notes
+        self.addressIdx = addressIdx
 
     def __str__(self):
         return f"{self.id}"
@@ -33,6 +34,9 @@ class Package:
     
     def loadTruckID(self, truckID):
         self.truckID = truckID
+
+    def getAddresIdx(self):
+        return self.addressIdx
 
 
 
