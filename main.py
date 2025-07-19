@@ -116,12 +116,18 @@ def main():
 
     secondTruck, thirdTruck = sort_remaining_packages(packageTable, secondTruck_packages, thirdTruck_packages)
 
+    for truck in [firstTruck, secondTruck, thirdTruck]:
+        # Deliver packages for each truck
+        deliver_packages(truck, distanceArray)
 
 
-def deliver_packages(delivery_Truck):
+
+def deliver_packages(package, distanceArray):
     # Implementation of the delivery logic goes here
     
-    for package in delivery_Truck:
+    currentNode = 0
+    totalDistance = 0
+
         # Simulate the delivery process for each package
         # For each package on truck: (start at index 0)
             # Set delivery status to "In Transit"
@@ -130,7 +136,24 @@ def deliver_packages(delivery_Truck):
             # Update the package in the hash table with the new delivery status and time
             # Find nearest neighbor for the next package
         # Continue until all packages are delivered
-        pass
+    package.deliveryStatus = DeliveryStatus.IN_TRANSIT.value
+    nextNode = getNearestNeighbor(package.getAddresIdx(), distance_array=distanceArray)
+    distance, time = travel_to_next_package(currentNode, nextNode[0], distanceArray)
+    totalDistance += distance
+    package.deliveryStatus = DeliveryStatus.DELIVERED.value
+
+
+def travel_to_next_package(currentNode, nextNode, distanceArray):
+    '''
+    Function to calculate the distance and time to travel to the next package.
+    :param currentNode: The current node (package address index).
+    :param nextNode: The next node (nearest neighbor package address index).
+    :param distanceArray: The array containing distances between nodes.
+    :return: The distance and time to travel to the next package.
+    '''
+    distance = float(distanceArray[currentNode][nextNode])
+    time = distance / 18  # Assuming speed is 18 mph
+    return distance, time
     
 def create_packages(package_array, address_Index):
     '''

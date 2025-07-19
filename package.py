@@ -1,7 +1,7 @@
-
+from main import DeliveryStatus
 
 class Package:
-    def __init__(self,id=-1, address="", deadline=None, city="", zip=0, weight=0, deliveryStatus="", notes=None, addressIdx=None):
+    def __init__(self,id=-1, address="", deadline=None, city="", zip=0, weight=0, deliveryStatus=DeliveryStatus.NOT_STARTED.value, notes=None, addressIdx=None):
         self.id = id
         self.address = address
         self.deadline = deadline
@@ -10,11 +10,7 @@ class Package:
         self.weight = weight
         self.deliveryStatus = deliveryStatus
         self.truckID = -1
-        self.HubDistance = -1
-        self.nearestNeighborID = -1
-        self.nearestNeighborDistance = -1
-        self.duplicateAddress = False
-        self.duplicateAddressPointer = 0
+        self.deliveryTime = None
         self.notes = notes
         self.addressIdx = addressIdx
 
@@ -37,6 +33,10 @@ class Package:
 
     def getAddresIdx(self):
         return self.addressIdx
+    
+    def deliverPackage(self, deliveryTime):
+        self.deliveryTime = deliveryTime
+        self.deliveryStatus = DeliveryStatus.DELIVERED.value
 
 
 
