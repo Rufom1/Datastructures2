@@ -1,4 +1,12 @@
-from main import DeliveryStatus
+
+from enum import Enum
+
+
+class DeliveryStatus(Enum):
+    NOT_STARTED = "Not Started"
+    IN_TRANSIT = "In Transit"
+    DELIVERED = "Delivered"
+    DELAYED = "Delayed"
 
 class Package:
     def __init__(self,id=-1, address="", deadline=None, city="", zip=0, weight=0, deliveryStatus=DeliveryStatus.NOT_STARTED.value, notes=None, addressIdx=None):

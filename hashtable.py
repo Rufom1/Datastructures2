@@ -39,6 +39,19 @@ class HashTable:
                 return True
         return False
     
+    def items(self):
+        for bucket in self.table:
+            for value in bucket:
+                yield value[1]
+    
+    def __str__(self):
+        return str(self.table)
+    def __repr__(self):
+        return f"HashTable(size={self.size}, table={self.table})"
+    def __len__(self):
+        return sum(len(bucket) for bucket in self.table)    
+    
+    
 
 if __name__ == "__main__":
     # Example usage

@@ -1,0 +1,20 @@
+Structure for task 
+
+I) Problem Statment 
+    - Define requirements 
+II) Algo Description 
+    - Plain english definition 
+    - Analyze run-time and factors 
+
+III) Pseudo-code Algorithm
+    - With methods 
+
+
+Problems and Heirarchy?
+- Combined total distance < 140 miles
+- Average of 40 packages 
+
+- Max 16 packages per truck 
+- Delivery process starts at 8am 
+- 18 mph speed (no delivery time)
+

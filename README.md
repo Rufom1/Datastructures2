@@ -27,8 +27,12 @@ Assumptions
 TASK 1.
 A.  Identify a named self-adjusting algorithm (e.g., nearest neighbor algorithm, greedy algorithm) that could be used to create your program to deliver the packages.
 
+    - We can use a nearest neighbor algorithm to identify the shortest distance between between each delivery node and the next node.  
+
 B.  Identify a self-adjusting data structure, such as a hash table, that could be used with the algorithm identified in part A to store the package data.
     1.  Explain how your data structure accounts for the relationship between the data components you are storing.
+
+        - A hash table can be used to associate package IDs with package data. 
 
 C.  Write an overview of your program in which you do the following:
     1.  Explain the algorithm’s logic using pseudocode.
